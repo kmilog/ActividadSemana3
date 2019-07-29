@@ -4,13 +4,19 @@
   "description": "Actividad 3",
   "main": "app.js",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "boostrap": "^2.0.0",
     "express": "^4.17.1",
     "express-session": "^1.16.2",
     "hbs": "^4.0.4",
     "jquery": "^3.4.1",
+    "memorystore": "^1.6.1",
     "mongodb": "^3.2.7",
-    "popper": "^1.0.1"
+    "mongoose": "^5.6.2",
+    "mongoose-unique-validator": "^2.0.3",
+    "popper": "^1.0.1",
+    "toastr": "^2.1.4",
+    "yargs": "^13.2.4"
   },
   "devDependencies": {},
   "scripts": {

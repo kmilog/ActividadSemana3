@@ -1,67 +1,89 @@
-//requires
+//Requires
+require('./config/config');
 const express = require('express')
 const app = express ()
 const path = require('path')
-const hbs = require ('hbs')
 const bodyParser = require('body-parser')
+const mongoose = require('mongoose');
+//const jwt = require('jsonwebtoken');
+//### Para usar las variables de sesión
 const session = require('express-session')
-//require('./helpers/helpers')
+var MemoryStore = require('memorystore')(session)
 
-//paths
+//Paths
 const dirPublic = path.join(__dirname, "../public")
-const dirViews = path.join(__dirname, '../template/views')
-const dirPartials = path.join(__dirname, '../template/partials')
 const dirNode_modules = path.join(__dirname , '../node_modules')
 
-//statics
+// if (typeof localStorage === "undefined" || localStorage === null) {
+//   var LocalStorage = require('node-localstorage').LocalStorage;
+//   localStorage = new LocalStorage('./scratch');
+// }
+
+
+//Static
 app.use(express.static(dirPublic))
-app.use('/css', express.static(dirNode_modules + '/bootstrap/dist/css'));
-app.use('/css', express.static( '../../public/css/site.css'));
+// app.use('/css', express.static(dirNode_modules + '/bootstrap/dist/css'));
 app.use('/js', express.static(dirNode_modules + '/jquery/dist'));
 app.use('/js', express.static(dirNode_modules + '/popper.js/dist'));
-app.use('/js', express.static(dirNode_modules + '/bootstrap/dist/js'));
+app.use('/js', express.static(dirNode_modules + '/toastr/build'));
+app.use('/css', express.static(dirNode_modules + '/toastr/build'));
+// app.use('/js', express.static(dirNode_modules + '/bootstrap/dist/js'));
+app.use('/css', express.static( '../../public/css/site.css'));
+app.use('/js', express.static('../../public/js/funcionesHtml.js'));
+
+
+//### Para usar las variables de sesión
+app.use(session({
+	cookie: { maxAge: 86400000 },
+ 	store: new MemoryStore({
+      	checkPeriod: 86400000 // prune expired entries every 24h
+    	}),
+  	secret: 'keyboard cat',
+  	resave: true,
+  	saveUninitialized: true
+}))
+
+
+app.use((req, res, next) =>{
+	// let token = localStorage.getItem('token')
+	
+	//  jwt.verify(token, 'virtual-tdea', (err, decoded) => {
+
+ //        if (err) {
+ //            return next();
+ //        }
+
+ //        req.usuario = decoded.usuario;
+ //        console.log(req.usuario)
+ //        res.locals.sesion = true
+ //        res.locals.nombre = req.usuario.nombre
+ //        next();
+
+ //    });
+ 
+	//En caso de usar variables de sesión
+	if(req.session.usuario){		
+		res.locals.sesion = true
+		res.locals.nombre = req.session.nombre
+	}	
+	next()
+})
+
 
 //BodyParser
 app.use(bodyParser.urlencoded({ extended: false }));
 
-//hbs1
-app.set('view engine', 'hbs')
-app.set('views', dirViews)
-hbs.registerPartials(dirPartials)
+//Routes
+app.use(require('./routes/index'));
 
-//session
-app.use(session({
-    secret: 'keyboart cat',
-    resave: false,
-    saveUninitialized: true
-}))
 
-//Views
-app.get('/', (req, res ) => {
-	res.render('Login', {
-		titulo: 'Inicio'		
-	})	
+mongoose.connect(process.env.URLDB, {useNewUrlParser: true}, (err, resultado) => {
+	if (err){
+		return console.log(error)
+	}
+	console.log("conectado")
 });
 
-app.get('/NuevoUsuario',(req, res) => {
-    res.render('NuevoUsuario'),{
-             
-    }
-});
-
-app.post('/Index', (req,res) => {
-    req.session.usuario
-    res.render('Inicio',{
-
-    })
-});
-
-app.get('*',(req,res)=> {
-	res.render('error', {
-		titulo: "Error 404"
-	})
-});
-
-app.listen(3000, () => {
-	console.log ('servidor en el puerto 3000')
+app.listen(process.env.PORT, () => {
+	console.log ('servidor en el puerto ' + process.env.PORT)
 });
